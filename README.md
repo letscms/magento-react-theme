@@ -58,7 +58,7 @@ Follow these instructions to get the theme up and running on your local machine 
 
 1.  **Clone the repository (or download the theme files):**
     ```bash
-    git clone https://your-repository-url.git magento-react-theme
+    git clone https://github.com/letscms/magento-react-theme.git
     cd magento-react-theme
     ```
 
@@ -80,6 +80,7 @@ Follow these instructions to get the theme up and running on your local machine 
     If `.env.example` doesn't exist, create `.env` and add the following line, replacing `https://your-magento-site/graphql` with your actual Magento GraphQL endpoint URL:
     ```env
     VITE_MAGENTO_API_URL=https://your-magento-site/graphql
+    VITE_BASE_URL=https://your-magento-site/graphql
     ```
     *Note: The variable name is `VITE_MAGENTO_API_URL` because we are using Vite.*
 
@@ -207,6 +208,21 @@ Contributions are welcome! If you'd like to contribute to the development of thi
 
 Please ensure your code adheres to the existing coding style and passes any linting checks.
 
+---
+🖥️ Live Demo
+
+👉 Checkout Live Demo:
+https://m24bmm.askjitendra.com/pub/theme/index
+
+You can explore the working implementation of this Magento React Theme integrated with a live Magento 2 backend.
+Note: Some demo features like order placement or payments might be disabled for security reasons.
+📑 Final Summary
+
+    Project Name: LetsCMS Magento React Theme
+
+    Demo URL: https://m24bmm.askjitendra.com/pub/theme/index
+
+    Developed By: LetsCMS Pvt Ltd
 ---
 
 ## 📄 License
