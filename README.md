@@ -216,6 +216,8 @@ https://m24bmm.askjitendra.com/pub/theme/index
 
 You can explore the working implementation of this Magento React Theme integrated with a live Magento 2 backend.
 Note: Some demo features like order placement or payments might be disabled for security reasons.
+---
+
 📑 Final Summary
 
     Project Name: LetsCMS Magento React Theme
