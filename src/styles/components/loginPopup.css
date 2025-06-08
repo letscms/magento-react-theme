@@ -1,0 +1,39 @@
+.login-popup-container {
+  z-index: 9999;
+}
+
+.login-popup {
+  padding: 0;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.login-popup-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 10;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.login-popup-close:hover {
+  color: #000;
+}
+
+/* Animation for popup */
+.swal2-show {
+  animation: fadeInUp 0.3s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
