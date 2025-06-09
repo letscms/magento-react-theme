@@ -80,7 +80,7 @@ Follow these instructions to get the theme up and running on your local machine 
     If `.env.example` doesn't exist, create `.env` and add the following line, replacing `https://your-magento-site/graphql` with your actual Magento GraphQL endpoint URL:
     ```env
     VITE_MAGENTO_API_URL=https://your-magento-site/graphql
-    VITE_BASE_URL=https://your-magento-site/graphql
+    VITE_BASE_URL=https://your-magento-site/
     ```
     *Note: The variable name is `VITE_MAGENTO_API_URL` because we are using Vite.*
 
