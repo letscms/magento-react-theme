@@ -212,7 +212,7 @@ Please ensure your code adheres to the existing coding style and passes any lint
 🖥️ Live Demo
 
 👉 Checkout Live Demo:
-https://m24bmm.askjitendra.com/pub/theme/index
+https://m24bmm.askjitendra.com/theme/index
 
 You can explore the working implementation of this Magento React Theme integrated with a live Magento 2 backend.
 Note: Some demo features like order placement or payments might be disabled for security reasons.
@@ -222,7 +222,7 @@ Note: Some demo features like order placement or payments might be disabled for 
 
     Project Name: LetsCMS Magento React Theme
 
-    Demo URL: https://m24bmm.askjitendra.com/pub/theme/index
+    Demo URL: https://m24bmm.askjitendra.com/theme/index
 
     Developed By: LetsCMS Pvt Ltd
 ---
