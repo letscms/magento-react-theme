@@ -12,7 +12,7 @@ import { WishlistProvider } from "./context/WishlistContext";
 import { ToastContainer, toast } from "react-toastify";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter >
       <AuthProvider>
         <CartProvider >
           <WishlistProvider>

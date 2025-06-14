@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useMemo, useCallback, use } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useWishlist } from "../context/WishlistContext";
 import { useCategory } from "../context/CategoryContext";
 import useProduct from "../hooks/useProduct";
-import { useWishlist } from "../context/WishlistContext";
 import { isAuthenticated } from "../api/auth";
 import LoadingSpinner from "../utils/Loader";
 import ErrorMessage from "../components/ui/ErrorMessage";
@@ -12,16 +12,17 @@ import Seo from "../components/Seo/seo";
 import ProductReviewForm from "../components/product/ProductReviewForm";
 import ProductReviewItem from "../components/product/ProductReviewItem";
 import { getProductReviews } from "../api/review";
-const  ConfigurableProductOptions  = React.lazy(() => import ( "../components/product/ConfigurableProductOptions"));
-const  BundleProductOptions = React.lazy(() => import ( "../components/product/BundleProductOptions"));
+const ConfigurableProductOptions = React.lazy(() =>
+  import("../components/product/ConfigurableProductOptions")
+);
+const BundleProductOptions = React.lazy(() =>
+  import("../components/product/BundleProductOptions")
+);
 import DownloadableProductLinks from "../components/product/DownloadableProductLinks";
 import GroupedProductItems from "../components/product/GroupedProductItems";
 import {
   HeartIcon,
   ShoppingCartIcon,
-  StarIcon,
-  StarSolidIcon,
-
 } from "../components/ui/Icons";
 
 const ProductDetailPage = () => {
@@ -29,10 +30,10 @@ const ProductDetailPage = () => {
   const navigate = useNavigate();
   const user = isAuthenticated();
 
-  // Product data and state
+  // Product data and state (assuming useProduct hook is correctly implemented)
   const { product, loading, error, getProductByUrlKey } = useProduct();
   const { isInWishlist, addItemToWishlist, removeItemFromWishlist } = useWishlist();
-  
+
   // Component state
   const [selectedImage, setSelectedImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -40,7 +41,7 @@ const ProductDetailPage = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState(null);
-  
+
   // Product variant state
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedConfigurableOptions, setSelectedConfigurableOptions] = useState({});
@@ -69,27 +70,28 @@ const ProductDetailPage = () => {
   }, [product, displayProduct, currentBundlePrice]);
 
   const { regular_price, final_price, discount } = currentPriceInfo;
-  const isOnSale = useMemo(() => 
-    discount && (discount.amount_off > 0 || discount.percent_off > 0),
+  const isOnSale = useMemo(
+    () => discount && (discount.amount_off > 0 || discount.percent_off > 0),
     [discount]
   );
 
+  // Image handling
   useEffect(() => {
-    if (displayProduct && displayProduct.media_gallery && displayProduct.media_gallery.length > 0) {
+    if (displayProduct?.media_gallery?.length > 0) {
       setSelectedImage(displayProduct.media_gallery[0].url || displayProduct.small_image?.url);
-    } else if (displayProduct && displayProduct.small_image?.url) {
+    } else if (displayProduct?.small_image?.url) {
       setSelectedImage(displayProduct.small_image.url);
     } else {
       setSelectedImage(null);
     }
   }, [displayProduct]);
+
   // Handlers
   const handleWishlistClick = useCallback(async () => {
     if (!user) {
       navigate("/login", { state: { from: `/product/${urlKey}` } });
       return;
     }
-
     try {
       if (isProductInWishlist) {
         await removeItemFromWishlist(product.id);
@@ -99,7 +101,7 @@ const ProductDetailPage = () => {
     } catch (err) {
       console.error("Wishlist operation failed:", err);
     }
-  }, [user, isProductInWishlist, product, selectedVariant, urlKey]);
+  }, [user, isProductInWishlist, product, urlKey, addItemToWishlist, removeItemFromWishlist]);
 
   const handleVariantChange = useCallback((variant, options) => {
     setSelectedVariant(variant);
@@ -127,15 +129,12 @@ const ProductDetailPage = () => {
   }, [product?.sku]);
 
   const handleQuantityChange = useCallback((e) => {
-    const value = parseInt(e.target.value);
-    if (value > 0) setQuantity(value);
-   
+    const value = parseInt(e.target.value, 10);
+    if (value > 0 && value <= 999) setQuantity(value);
   }, []);
-  const incrementQuantity = useCallback(() => 
-    setQuantity(prev => Math.min(prev + 1, 999)), []);
-    
-  const decrementQuantity = useCallback(() => 
-    setQuantity(prev => Math.max(prev - 1, 1)), []);
+
+  const incrementQuantity = useCallback(() => setQuantity((prev) => Math.min(prev + 1, 999)), []);
+  const decrementQuantity = useCallback(() => setQuantity((prev) => Math.max(prev - 1, 1)), []);
 
   // Data fetching
   const fetchReviews = useCallback(async (sku) => {
@@ -144,12 +143,7 @@ const ProductDetailPage = () => {
     setReviewsError(null);
     try {
       const result = await getProductReviews(sku);
-      if (result.success) {
-        setReviews(result.reviews || []);
-      } else {
-        setReviewsError(result.message || "Failed to load reviews.");
-        setReviews([]);
-      }
+      setReviews(result.reviews || []);
     } catch (error) {
       setReviewsError("An error occurred while fetching reviews.");
       setReviews([]);
@@ -164,9 +158,7 @@ const ProductDetailPage = () => {
       try {
         const productData = await getProductByUrlKey(urlKey);
         setSelectedImage(
-          productData?.media_gallery?.[0]?.url || 
-          productData?.small_image?.url || 
-          null
+          productData?.media_gallery?.[0]?.url || productData?.small_image?.url || null
         );
       } catch (err) {
         console.error("Failed to fetch product:", err);
@@ -180,6 +172,14 @@ const ProductDetailPage = () => {
       fetchReviews(product.sku);
     }
   }, [product?.sku, fetchReviews]);
+
+  // Check if all required bundle options are selected
+  const isBundleValid = useMemo(() => {
+    if (product?.type_id !== "bundle" || !product.items) return true;
+    return product.items.every((item) =>
+      item.required ? selectedBundleItems[item.option_id]?.selection_id : true
+    );
+  }, [product, selectedBundleItems]);
 
   // Early returns for loading/error states
   if (loading) {
@@ -197,10 +197,7 @@ const ProductDetailPage = () => {
       </div>
     );
   }
-  console.log("Product data:", product);
-  console.log("Display product:", displayProduct);
 
-  // Main render
   return (
     <>
       <Seo
@@ -216,9 +213,9 @@ const ProductDetailPage = () => {
           <nav className="text-sm">
             <ol className="flex items-center space-x-2">
               <li className="flex items-center">
-                <a href="/" className="text-gray-500 hover:text-indigo-600">Home</a>              
-              <span className="mx-2 text-gray-400">/</span>
-              </li> 
+                <a href="/" className="text-gray-500 hover:text-indigo-600">Home</a>
+                <span className="mx-2 text-gray-400">/</span>
+              </li>
               <li className="text-indigo-600 font-medium">{displayProduct.name}</li>
             </ol>
           </nav>
@@ -233,14 +230,12 @@ const ProductDetailPage = () => {
                 <img
                   src={selectedImage || displayProduct.small_image?.url}
                   alt={displayProduct.name}
-                 loading="eager"
-                  className="max-h-full max-w-full object-contain "
+                  loading="eager"
+                  className="max-h-full max-w-full object-contain"
                   width="300px"
                   height="300px"
                 />
               </div>
-
-              {/* Image Thumbnails */}
               {displayProduct.media_gallery?.length > 0 && (
                 <div className="flex flex-wrap -mx-2 mb-4">
                   {displayProduct.media_gallery.map((image, index) => (
@@ -249,14 +244,16 @@ const ProductDetailPage = () => {
                       className="w-1/4 px-2 mb-4"
                       onClick={() => setSelectedImage(image.url)}
                     >
-                      <div className={`h-24 rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer ${
-                        image.url === selectedImage ? "ring-2 ring-indigo-500" : ""
-                      }`}>
+                      <div
+                        className={`h-24 rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer ${
+                          image.url === selectedImage ? "ring-2 ring-indigo-500" : ""
+                        }`}
+                      >
                         <img
                           src={image.url}
                           alt={image.label || `${product.name} thumbnail ${index + 1}`}
                           loading="lazy"
-                          className="max-h-full max-w-full object-contain w-[100px] h-[100px] "
+                          className="max-h-full max-w-full object-contain w-[100px] h-[100px]"
                           width="100px"
                           height="100px"
                         />
@@ -269,30 +266,23 @@ const ProductDetailPage = () => {
 
             {/* Product Info */}
             <div className="md:flex-1 px-4">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">
-                {displayProduct.name}
-              </h1>
-
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">{displayProduct.name}</h1>
               <div className="mb-4 space-y-2">
                 <div className="flex items-center">
                   <span className="font-bold text-gray-700 mr-2">SKU:</span>
                   <span className="text-gray-600">{displayProduct.sku}</span>
                 </div>
-                
                 <div className="flex items-center">
                   <span className="font-bold text-gray-700 mr-2">Availability:</span>
-                  <span className={
-                    displayProduct.stock_status === "IN_STOCK" 
-                      ? "text-green-600" 
-                      : "text-red-600"
-                  }>
-                    {displayProduct.stock_status === "IN_STOCK" 
-                      ? "In Stock" 
-                      : "Out of Stock"}
+                  <span
+                    className={displayProduct.stock_status === "IN_STOCK" ? "text-green-600" : "text-red-600"}
+                  >
+                    {displayProduct.stock_status === "IN_STOCK" ? "In Stock" : "Out of Stock"}
                   </span>
                 </div>
               </div>
-{/*   Product Type Specific Components */}
+
+              {/* Product Type Specific Components */}
               {product.type_id === "configurable" && product.configurable_options && (
                 <ConfigurableProductOptions
                   product={product}
@@ -300,18 +290,15 @@ const ProductDetailPage = () => {
                   selectedOptions={selectedConfigurableOptions}
                 />
               )}
-              
-              {product.type_id === "bundle" && product.items && (
+              {product.type_id === "bundle" && (
                 <BundleProductOptions
-                  product={product} 
+                  product={product}
                   onBundleSelectionChange={handleBundleSelectionChange}
                 />
               )}
-              
               {product.type_id === "downloadable" && (
                 <DownloadableProductLinks product={product} />
               )}
-              
               {product.type_id === "grouped" && product.items && (
                 <GroupedProductItems
                   product={product}
@@ -369,58 +356,34 @@ const ProductDetailPage = () => {
                     </button>
                   </div>
                 </div>
-
                 <div className="flex space-x-4">
                   <AddToCartButton
                     product={displayProduct}
                     quantity={quantity}
                     selectedOptions={
-                      product.type_id === "configurable" 
-                        ? selectedConfigurableOptions 
-                        : undefined
+                      product.type_id === "configurable" ? selectedConfigurableOptions : undefined
                     }
                     bundleSelections={
-                      product.type_id === "bundle" 
-                        ? selectedBundleItems 
-                        : undefined
+                      product.type_id === "bundle" ? selectedBundleItems : undefined
                     }
                     groupedItemsQuantities={
-                      product.type_id === "grouped" 
-                        ? groupedItemQuantities 
-                        : undefined
+                      product.type_id === "grouped" ? groupedItemQuantities : undefined
                     }
                     disabled={
-                      (product.type_id !== "grouped" && displayProduct.stock_status !== "IN_STOCK") ||
+                      displayProduct.stock_status !== "IN_STOCK" ||
                       (product.type_id === "configurable" && !selectedVariant) ||
-                      (product.type_id === "bundle" && 
-                        (!selectedBundleItems || 
-                         Object.keys(selectedBundleItems).length === 0 ||
-                         (product.items && 
-                          !product.items.every(item => 
-                            item.required ? selectedBundleItems[item.option_id] : true
-                          )))) ||
-                      (product.type_id === "grouped" && 
-                        (!groupedItemQuantities || 
-                         Object.values(groupedItemQuantities).every(qty => qty === 0) ||
-                         (product.items && 
-                          Object.entries(groupedItemQuantities).some(([sku, qty]) => {
-                            if (qty > 0) {
-                              const itemInGroup = product.items.find(it => it.product.sku === sku);
-                              return !itemInGroup || itemInGroup.product.stock_status !== "IN_STOCK";
-                            }
-                            return false;
-                          }))))
+                      (product.type_id === "bundle" && !isBundleValid) ||
+                      (product.type_id === "grouped" &&
+                        (!groupedItemQuantities ||
+                          Object.values(groupedItemQuantities).every((qty) => qty === 0)))
                     }
                   >
-                    <ShoppingCartIcon />                  
+                    <ShoppingCartIcon />
                   </AddToCartButton>
-                  
                   <button
                     onClick={handleWishlistClick}
                     className={`border ${
-                      isProductInWishlist 
-                        ? "border-red-300 bg-red-50" 
-                        : "border-gray-300"
+                      isProductInWishlist ? "border-red-300 bg-red-50" : "border-gray-300"
                     } text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-100 transition-colors flex items-center`}
                     aria-label={isProductInWishlist ? "Remove from wishlist" : "Add to wishlist"}
                   >
@@ -448,7 +411,6 @@ const ProductDetailPage = () => {
                 </button>
               ))}
             </div>
-
             <div className="py-4">
               {activeTab === "description" && (
                 <div
@@ -458,16 +420,13 @@ const ProductDetailPage = () => {
                   }}
                 />
               )}
-
               {activeTab === "details" && (
                 <div className="text-gray-600">
                   <h3 className="text-lg font-bold mb-4">Product Specifications</h3>
                   <div className="prose max-w-none">
                     <p>
                       <strong>Type:</strong>{" "}
-                      <span className="capitalize">
-                        {product.type_id?.replace(/_/g, " ") || "N/A"}
-                      </span>
+                      <span className="capitalize">{product.type_id?.replace(/_/g, " ") || "N/A"}</span>
                     </p>
                     <p>
                       <strong>SKU:</strong> {displayProduct.sku}
@@ -485,13 +444,11 @@ const ProductDetailPage = () => {
                   </div>
                 </div>
               )}
-
               {activeTab === "reviews" && (
                 <div className="text-gray-600">
                   <h3 className="text-lg font-bold mb-4">Customer Reviews</h3>
                   {reviewsLoading && <LoadingSpinner />}
                   {reviewsError && <ErrorMessage message={reviewsError} />}
-                  
                   {!reviewsLoading && !reviewsError && (
                     <>
                       {reviews.length === 0 ? (
@@ -501,16 +458,15 @@ const ProductDetailPage = () => {
                       ) : (
                         <div className="space-y-6 mb-6">
                           {reviews.map((review, index) => (
-                            <ProductReviewItem 
-                              key={`${review.created_at}-${index}`} 
-                              review={review} 
+                            <ProductReviewItem
+                              key={`${review.created_at}-${index}`}
+                              review={review}
                             />
                           ))}
                         </div>
                       )}
                     </>
                   )}
-                  
                   {user ? (
                     <ProductReviewForm
                       productSku={product.sku}
@@ -521,9 +477,7 @@ const ProductDetailPage = () => {
                       Please{" "}
                       <button
                         onClick={() =>
-                          navigate("/login", {
-                            state: { from: `/product/${urlKey}` },
-                          })
+                          navigate("/login", { state: { from: `/product/${urlKey}` } })
                         }
                         className="text-indigo-600 hover:underline"
                       >

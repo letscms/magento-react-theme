@@ -298,152 +298,112 @@ export const getGlobalCartData = () => {
  * @param {string} cartId - Optional cart ID for guest users
  * @returns {Promise<Object>} Updated cart data
  */
-export const addToCart = async (product, quantity = 1, cartId = null) => {
-  try {
-    // Validate product data
-    if (!product) {
-      throw new Error("Product is required");
-    }
+export const addToCart = async (cartItems, cartId = null) => {
+  const isLoggedIn = !!localStorage.getItem("magentoCustomerToken");
+  const api = GraphQLApi;
+  console.log("Adding to apiCart:", cartItems);
 
-    if (!product.sku) {
-      throw new Error("Product SKU is required");
-    }
-
-    const isLoggedIn = !!localStorage.getItem("magentoCustomerToken");
-    const api = GraphQLApi;
-
-    // Get or create cart ID if not provided
-    if (!cartId) {
-      cartId = await getOrCreateCartId();
-    }
-
-    // Verify the cart exists before adding items
-    try {
-      await getCart(cartId);
-    } catch (error) {
-      console.warn("Cart not found, creating new cart");
-      cartId = await createCart();
-    }
-
-    const addToCartMutation = isLoggedIn
-      ? `
-      mutation($sku: String!, $quantity: Float!) {
-        addProductsToCart(
-          cartId: "${cartId}"
-          cartItems: [
-            {
-              sku: $sku
-              quantity: $quantity
-            }
-          ]
-        ) {
-          cart {
-            id
-            items {
-              id
-              product {
-                name
-                sku
-                image {
-                  url
-                }
-              }
-              quantity
-              prices {
-                price {
-                  value
-                  currency
-                }
-              }
-            }
-          }
-          user_errors {
-            code
-            message
-          }
-        }
-      }
-    `
-      : `
-      mutation($cartId: String!, $sku: String!, $quantity: Float!) {
-        addProductsToCart(
-          cartId: $cartId
-          cartItems: [
-            {
-              sku: $sku
-              quantity: $quantity
-            }
-          ]
-        ) {
-          cart {
-            id
-            items {
-              id
-              product {
-                name
-                sku
-                image {
-                  url
-                }
-              }
-              quantity
-              prices {
-                price {
-                  value
-                  currency
-                }
-              }
-            }
-          }
-          user_errors {
-            code
-            message
-          }
-        }
-      }
-    `;
-
-    const variables = isLoggedIn
-      ? { sku: product.sku, quantity: quantity }
-      : { cartId, sku: product.sku, quantity: quantity };
-
-    const response = await api.post("", {
-      query: addToCartMutation,
-      variables,
-    });
-
-    // Check for GraphQL errors
-    if (response.data.errors) {
-      const errorMessage = response.data.errors[0].message;
-      throw new Error(errorMessage);
-    }
-
-    // Check for user errors
-    if (response.data.data.addProductsToCart.user_errors?.length > 0) {
-      const errorMessage =
-        response.data.data.addProductsToCart.user_errors[0].message;
-      throw new Error(errorMessage);
-    }
-
-    // Refresh cart data after adding item
-    await getCart(cartId);
-
-    return response.data.data.addProductsToCart.cart;
-  } catch (error) {
-    console.error("❌ Error adding item to cart:", error.message);
-
-    let userMessage = "Failed to add product to cart";
-    if (error.message.includes("Could not find a cart with ID")) {
-      userMessage = "Your session expired, please try again";
-    } else if (error.message.includes("Could not find a product with SKU")) {
-      userMessage = "This product is no longer available";
-    } else if (error.message.includes("The requested qty is not available")) {
-      userMessage = "The requested quantity is not available";
-    }
-
-    throw new Error(userMessage);
+  if (!cartId) {
+    cartId = await getOrCreateCartId();
   }
+
+  try {
+    await getCart(cartId);
+  } catch (error) {
+    console.warn("Cart not found, creating new cart");
+    cartId = await createCart();
+  }
+
+  const isBundleProduct = cartItems.some((item) => item.bundle_options);
+
+  const addToCartMutation = isBundleProduct
+    ? `
+    mutation($cartId: String!, $cartItems: [BundleProductCartItemInput!]!) {
+      addBundleProductsToCart(
+        input: {
+          cart_id: $cartId
+          cart_items: $cartItems
+        }
+      ) {
+        cart {
+          id
+          items {
+            id
+            product {
+              name
+              sku
+              image {
+                url
+              }
+            }
+            quantity
+          }
+        }
+      }
+    }
+  `
+    : `
+    mutation($cartId: String!, $cartItems: [CartItemInput!]!) {
+      addProductsToCart(
+        cartId: $cartId
+        cartItems: $cartItems
+      ) {
+        cart {
+          id
+          items {
+            id
+            product {
+              name
+              sku
+              image {
+                url
+              }
+            }
+            quantity
+          }
+        }
+        user_errors {
+          code
+          message
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    cartId,
+    cartItems,
+  };
+
+  const response = await api.post("", {
+    query: addToCartMutation,
+    variables,
+  });
+
+  if (response.data.errors) {
+    const errorMessage = response.data.errors[0].message;
+    throw new Error(errorMessage);
+  }
+
+  // pick the correct root key based on mutation used
+  const addToCartResponseKey = isBundleProduct
+    ? "addBundleProductsToCart"
+    : "addProductsToCart";
+
+  if (!isBundleProduct) {
+    const userErrors = response.data.data[addToCartResponseKey].user_errors;
+    if (userErrors?.length > 0) {
+      const errorMessage = userErrors[0].message;
+      throw new Error(errorMessage);
+    }
+  }
+
+  await getCart(cartId);
+
+  return response.data.data[addToCartResponseKey].cart;
 };
+
+
 
 /**
  * Updates the quantity of an item in the cart

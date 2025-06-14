@@ -627,6 +627,36 @@ export const getProductByUrlKey = async (urlKey) => {
                       }
                     }
                   }
+                  ... on BundleProduct {
+                    items {
+                      option_id
+                      title
+                      required
+                      type
+                      position
+                      options {
+                        id
+                        label
+                        quantity
+                        position
+                        is_default
+                        product {
+                          id
+                          sku
+                          name
+                          stock_status
+                          price_range {
+                            minimum_price {
+                              final_price {
+                                value
+                                currency
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }

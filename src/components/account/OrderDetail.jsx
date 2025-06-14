@@ -4,6 +4,14 @@ import { getOrderById } from "../../api/orders";
 import { formatDate, formatPrice } from "../../utils/formatters";
 import { printOrder } from "../../utils/PrintOrder";
 
+// Static mapping for bundle option value IDs to labels (based on 24-WG080)
+const BUNDLE_OPTION_LABELS = {
+  "MTg=": "Sprite Stasis Ball 55 cm",
+  "MTk=": "Sprite Foam Yoga Brick",
+  "MjA=": "Sprite Yoga Strap",
+  "MjE=": "Sprite Foam Roller"
+};
+
 const OrderDetail = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
@@ -61,13 +69,48 @@ const OrderDetail = () => {
         return "bg-gray-100 text-gray-800";
     }
   }, []);
-
+console.log("order", order);
   // Safely get shipping address
   const getShippingAddress = useCallback(() => {
-    return (
-      order?.extension_attributes?.shipping_assignments?.[0]?.shipping?.address || null
-    );
+    return order?.shipping_address || null;
   }, [order]);
+
+  // Render bundle or grouped product details
+  const renderProductDetails = (item) => {
+    if (item.product_type === "bundle" && item.bundle_options?.length > 0) {
+      return (
+        <div className="ml-4 mt-2 text-xs text-gray-600">
+          <ul className="list-disc pl-4">
+            {item.bundle_options.map((option) => (
+              <li key={option.id}>
+                {option.label}:{" "}
+                {option.values.map((value) => (
+                  <span key={value.id}>
+                    {BUNDLE_OPTION_LABELS[value.id] || `Option ${value.id}`} (x{value.quantity}, {formatPrice(value.price.value)})
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    // Placeholder for grouped products (if any)
+    if (item.product_type === "grouped" && item.grouped_items?.length > 0) {
+      return (
+        <div className="ml-4 mt-2 text-xs text-gray-600">
+          <ul className="list-disc pl-4">
+            {item.grouped_items.map((child) => (
+              <li key={child.id}>
+                {child.product.name} (SKU: {child.product.sku}, x{child.quantity_ordered}, {formatPrice(child.product_sale_price.value)})
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    return null;
+  };
 
   if (loading) {
     return (
@@ -162,7 +205,7 @@ const OrderDetail = () => {
                 {getShippingAddress().city}, {getShippingAddress().region}{" "}
                 {getShippingAddress().postcode}
                 <br />
-                {getShippingAddress().country_id}
+                {getShippingAddress().country_code}
                 <br />
                 T: {getShippingAddress().telephone}
               </address>
@@ -182,7 +225,7 @@ const OrderDetail = () => {
               {order.billing_address.city}, {order.billing_address.region}{" "}
               {order.billing_address.postcode}
               <br />
-              {order.billing_address.country_id}
+              {order.billing_address.country_code}
               <br />
               T: {order.billing_address.telephone}
             </address>
@@ -285,6 +328,7 @@ const OrderDetail = () => {
                             <div className="text-xs text-gray-500 mt-1">
                               SKU: {item.product.sku}
                             </div>
+                            {renderProductDetails(item)}
                           </div>
                         </div>
                       </Link>
@@ -345,7 +389,7 @@ const OrderDetail = () => {
         <div className="flex flex-wrap gap-4">
           {order.status === "complete" && (
             <Link
-              to={`/account/orders/${order.entity_id}/reorder`}
+              to={`/account/orders/${order.id}/reorder`}
               className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm transition-colors"
               aria-label="Reorder this order"
             >
@@ -363,7 +407,7 @@ const OrderDetail = () => {
           </button>
           {order.status !== "complete" && order.status !== "canceled" && (
             <Link
-              to={`/account/orders/${order.entity_id}/track`}
+              to={`/account/orders/${order.id}/track`}
               className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               aria-label="Track order"
             >

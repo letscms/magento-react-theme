@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate ,NavLink } from "react-router-dom";
 import { useCategory } from "../../context/CategoryContext";
 import Loader from "../../utils/Loader";
 import { FiChevronRight, FiMenu, FiX, FiPlus, FiMinus } from "react-icons/fi";
@@ -351,14 +351,14 @@ const Navbar = () => {
                 onMouseEnter={() => handleMouseEnter(1, cat.id)}
                 onMouseLeave={() => handleMouseLeave(1)}
               >
-                <Link
+                <NavLink
                   to={`/category/${cat.slug || cat.id}`}
                   className={`block px-5 py-4 font-medium text-gray-800 hover:text-indigo-600 ${
                     activeLevels[1] === cat.id ? "text-indigo-600" : ""
                   } transition-colors duration-200`}
                 >
                   {cat.name}
-                </Link>
+                </NavLink>
 
                 {cat.subcategories?.length > 0 && activeLevels[1] === cat.id && (
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 z-50">

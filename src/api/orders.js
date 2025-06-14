@@ -84,6 +84,8 @@ const ORDER_FRAGMENT = `
       }
       quantity_ordered
       product_type
+      
+      
     }
   }
 `;
@@ -136,46 +138,67 @@ export const getAllOrders = async () => {
     };
   }
 };
-
 /**
- * Fetch a specific order by ID for the current customer
- * @param {string} orderId - The order ID to fetch
+ * Fetch a specific order by order number for the current customer
+ * @param {string} order_number - The order number to fetch (e.g., "000000123")
  * @returns {Promise<Object|null>} Order object or null if not found
  */
 export const getOrderById = async (order_number) => {
   if (!order_number) {
-    console.error('Order ID is required to fetch order details');
+    console.error('Order number is required to fetch order details');
     return null;
   }
 
   try {
     const query = `
       ${ORDER_FRAGMENT}
-      query GetCustomerOrders {
+      query GetCustomerOrderByNumber($filter: CustomerOrdersFilterInput!) {
         customer {
-          orders {
+          orders(filter: $filter) {
             items {
               ...OrderDetails
+              items {
+                ... on BundleOrderItem {
+                  bundle_options {
+                    id
+                    label
+                    values {
+                      id
+                    
+                      quantity
+                      price {
+                        value
+                        currency
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
       }
     `;
 
-    const response = await GraphQLApi.post('/graphql', { query });
+    const variables = {
+      filter: {
+        number: { eq: String(order_number) }
+      }
+    };
+
+    const response = await GraphQLApi.post('/graphql', { query, variables });
+
     if (response.data.errors) {
       throw new Error(response.data.errors[0].message);
     }
 
     const orders = response.data.data.customer?.orders?.items || [];
-    const specificOrder = orders.find(order => order.order_number === String(order_number));
-    return specificOrder;
+    return orders.length > 0 ? orders[0] : null;
   } catch (error) {
     console.error(`Error fetching order #${order_number}:`, error);
     return null;
   }
 };
-
 /**
  * Fetch customer orders with pagination
  * @param {number} currentPage - Page number (default: 1)
