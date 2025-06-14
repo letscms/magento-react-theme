@@ -40,7 +40,8 @@ function SearchResultsPage() {
     setAppliedFilters({});
     // Fetch global aggregations for filtering options
     const loadGlobalFilters = async () => {
-      if (query) { // Only fetch if there's a search query
+      if (query) {
+        // Only fetch if there's a search query
         await fetchGlobalProductAggregations();
       }
     };
@@ -49,18 +50,18 @@ function SearchResultsPage() {
 
   // Update availableFilters when globalProductAggregations changes from the context
   useEffect(() => {
-    if (searchQuery) { // Only update if there's a search query
+    if (searchQuery) {
+      // Only update if there's a search query
       setAvailableFilters(globalProductAggregations || []);
     } else {
       setAvailableFilters([]);
     }
   }, [globalProductAggregations, searchQuery]);
- useEffect(() => {
-  setDisplayedProducts([]);
+  useEffect(() => {
+    setDisplayedProducts([]);
     setDisplayedProducts([]);
     setCurrentPage(1); // Reset page to 1 when filters or category changes
-    
-  }, [ appliedFilters, sortOption, sortDirection]);
+  }, [appliedFilters, sortOption, sortDirection]);
 
   const fetchSearchResults = useCallback(async () => {
     if (!searchQuery) {
@@ -68,7 +69,7 @@ function SearchResultsPage() {
       setTotalProducts(0);
       return;
     }
-    
+
     setLoadingPage(true);
 
     const attributeFilterGroups = Object.entries(appliedFilters)
@@ -143,7 +144,6 @@ function SearchResultsPage() {
   const handleSortChange = (e) => {
     const value = e.target.value;
     if (value.includes("_")) {
-      
       const [field, direction] = value.split("_");
       setSortOption(field);
       setSortDirection(direction.toUpperCase());
@@ -175,7 +175,9 @@ function SearchResultsPage() {
   if (contextError) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <ErrorMessage message={contextError.message || "An error occurred while searching."} />
+        <ErrorMessage
+          message={contextError.message || "An error occurred while searching."}
+        />
         <p className="mt-4 text-center">
           <Link to="/" className="text-indigo-600 hover:underline">
             Return to homepage
@@ -184,7 +186,7 @@ function SearchResultsPage() {
       </div>
     );
   }
-  
+
   if (!searchQuery && !isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -193,7 +195,6 @@ function SearchResultsPage() {
       </div>
     );
   }
-
 
   return (
     <>
@@ -215,7 +216,9 @@ function SearchResultsPage() {
               <span className="mx-2 text-gray-400">/</span>
             </li>
             <li className="flex items-center">
-              <span className="text-indigo-600">Search Results for "{searchQuery}"</span>
+              <span className="text-indigo-600">
+                Search Results for "{searchQuery}"
+              </span>
             </li>
           </ol>
         </nav>
@@ -236,7 +239,11 @@ function SearchResultsPage() {
               />
             </aside>
           )}
-          <main className={`w-full ${availableFilters.length > 0 ? 'md:w-3/4' : 'md:w-full'}`}>
+          <main
+            className={`w-full ${
+              availableFilters.length > 0 ? "md:w-3/4" : "md:w-full"
+            }`}
+          >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <div className="mb-4 sm:mb-0">
                 <p className="text-gray-600">
@@ -272,13 +279,15 @@ function SearchResultsPage() {
                 <LoadingSpinner />
               </div>
             ) : !isLoading && displayedProducts.length === 0 && searchQuery ? (
-               <EmptyState message={`No products found for "${searchQuery}". Try a different search term or adjust your filters.`} />
+              <EmptyState
+                message={`No products found for "${searchQuery}". Try a different search term or adjust your filters.`}
+              />
             ) : displayedProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {displayedProducts.map((product, index) => (
+                {displayedProducts.map((products, index) => (
                   <ProductCard
-                    key={product.id || `product-${index}`}
-                    productsdata={[product]}
+                    key={products.id || `product-${index}`}
+                    product={products}
                     isLCPCandidate={index === 0 && currentPage === 1}
                   />
                 ))}
@@ -294,9 +303,9 @@ function SearchResultsPage() {
             {totalPages > 1 && !isLoading && displayedProducts.length > 0 && (
               <div className="mt-8 flex justify-center">
                 <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}

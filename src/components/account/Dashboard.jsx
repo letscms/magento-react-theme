@@ -17,26 +17,20 @@ const Dashboard = () => {
       setError(null);
 
       try {  
-        const result = await getRecentOrders(5); // Get 5 most recent orders]
+        const result = await getRecentOrders(5);
    
         if (result && Array.isArray(result)) {
           setRecentOrders(result);    
         } else if (result && result.error) {
           console.error("Failed to fetch recent orders:", result.error);
-
-          // Handle authentication errors without forcing logout
           if (result.auth_error) {
             setError("Please refresh the page or navigate to another section.");
           } else {
             setError(result.error || "Unable to load recent orders");
           }
-
-          setRecentOrders([]); // Clear any previous orders
+          setRecentOrders([]);
         } else {
-          console.warn(
-            "Unexpected response structure from getRecentOrders:",
-            result
-          );
+          console.warn("Unexpected response structure from getRecentOrders:", result);
           setRecentOrders([]);
           setError("Unable to load recent orders. Unexpected data format.");
         }
@@ -57,7 +51,6 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  // Helper function to safely render address
   const renderAddress = (address) => {
     if (!address) return "No address available";
 
@@ -98,7 +91,6 @@ const Dashboard = () => {
     );
   };
 
-  // Helper function to safely render order status
   const getStatusStyle = (status) => {
     if (!status) return "bg-gray-100 text-gray-800";
 
@@ -111,15 +103,14 @@ const Dashboard = () => {
     return "bg-gray-100 text-gray-800";
   };
 
-  // If no user is logged in, show a friendly message instead of an error
   if (!user) {
     return (
-      <div className="text-center py-10">
-        <h1 className="text-2xl font-bold mb-4">My Account</h1>
-        <p className="mb-6">Please log in to view your account dashboard.</p>
+      <div className="text-center py-8 sm:py-10">
+        <h1 className="text-xl sm:text-2xl font-bold mb-4">My Account</h1>
+        <p className="mb-4 sm:mb-6 text-sm sm:text-base">Please log in to view your account dashboard.</p>
         <button
           onClick={() => navigate("/login")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          className="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 text-sm sm:text-base"
         >
           Log In
         </button>
@@ -129,11 +120,11 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">My Dashboard</h1>
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">My Dashboard</h1>
 
       {/* Welcome Message */}
-      <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 mb-6">
-        <p className="text-indigo-700">
+      <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 sm:p-6 mb-4 sm:mb-6">
+        <p className="text-indigo-700 text-sm sm:text-base">
           Hello,{" "}
           <span className="font-semibold">
             {user?.firstname || ""} {user?.lastname || ""}
@@ -144,11 +135,11 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Account Information */}
-        <div className="border rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Account Information</h2>
+        <div className="border rounded-lg p-4 sm:p-6">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold">Account Information</h2>
             <Link
               to="/account/edit"
               className="text-sm text-indigo-600 hover:text-indigo-800"
@@ -156,7 +147,7 @@ const Dashboard = () => {
               Edit
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 text-sm sm:text-base">
             <p>
               <span className="text-gray-600">Name:</span>{" "}
               {user?.firstname || ""} {user?.lastname || ""}
@@ -168,9 +159,9 @@ const Dashboard = () => {
         </div>
 
         {/* Default Addresses */}
-        <div className="border rounded-lg p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Default Addresses</h2>
+        <div className="border rounded-lg p-4 sm:p-6">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold">Default Addresses</h2>
             <Link
               to="/account/addresses"
               className="text-sm text-indigo-600 hover:text-indigo-800"
@@ -180,12 +171,12 @@ const Dashboard = () => {
           </div>
 
           {user?.addresses && user.addresses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <h3 className="font-medium text-gray-700 mb-1">
+                <h3 className="font-medium text-gray-700 mb-1 text-sm sm:text-base">
                   Default Billing
                 </h3>
-                <address className="text-sm not-italic">
+                <address className="text-xs sm:text-sm not-italic">
                   {renderAddress(
                     user.addresses.find((addr) => addr.default_billing) ||
                       user.addresses[0]
@@ -193,10 +184,10 @@ const Dashboard = () => {
                 </address>
               </div>
               <div>
-                <h3 className="font-medium text-gray-700 mb-1">
+                <h3 className="font-medium text-gray-700 mb-1 text-sm sm:text-base">
                   Default Shipping
                 </h3>
-                <address className="text-sm not-italic">
+                <address className="text-xs sm:text-sm not-italic">
                   {renderAddress(
                     user.addresses.find((addr) => addr.default_shipping) ||
                       user.addresses[0]
@@ -205,7 +196,7 @@ const Dashboard = () => {
               </div>
             </div>
           ) : (
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm sm:text-base">
               You have not set a default billing or shipping address.
             </p>
           )}
@@ -213,9 +204,9 @@ const Dashboard = () => {
       </div>
 
       {/* Recent Orders */}
-      <div className="border rounded-lg p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Recent Orders</h2>
+      <div className="border rounded-lg p-4 sm:p-6">
+        <div className="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold">Recent Orders</h2>
           <Link
             to="/account/orders"
             className="text-sm text-indigo-600 hover:text-indigo-800"
@@ -225,12 +216,12 @@ const Dashboard = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-6 sm:py-8">
             <LoadingSpinner />
           </div>
         ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4">
-            <p className="text-red-700">{error}</p>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 sm:p-6">
+            <p className="text-red-700 text-sm sm:text-base">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-2 text-sm text-indigo-600 hover:text-indigo-800"
@@ -239,75 +230,33 @@ const Dashboard = () => {
             </button>
           </div>
         ) : recentOrders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Order #
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Date
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Ship To
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Total
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {recentOrders.map((order) => (
-                  <tr
-                    key={
-                      order.entity_id || order.id || Math.random().toString()
-                    }
-                  >
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      #{order.order_number || "N/A"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {order.created_at ? formatDate(order.created_at) : "N/A"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-  {order.shipping_address
-    ? `${order.shipping_address.firstname || ""} ${order.shipping_address.lastname || ""}`.trim()
-    : "N/A"}
-</td>
-
-
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      $
-                      {typeof order.grand_total === "number"
+          <>
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {recentOrders.map((order) => (
+                <div
+                  key={order.entity_id || order.id || Math.random().toString()}
+                  className="border rounded-lg p-4"
+                >
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="font-medium text-gray-900">Order #</div>
+                    <div>#{order.order_number || "N/A"}</div>
+                    <div className="font-medium text-gray-900">Date</div>
+                    <div>{order.created_at ? formatDate(order.created_at) : "N/A"}</div>
+                    <div className="font-medium text-gray-900">Ship To</div>
+                    <div>
+                      {order.shipping_address
+                        ? `${order.shipping_address.firstname || ""} ${order.shipping_address.lastname || ""}`.trim()
+                        : "N/A"}
+                    </div>
+                    <div className="font-medium text-gray-900">Total</div>
+                    <div>
+                      ${typeof order.grand_total === "number"
                         ? order.grand_total.toFixed(2)
                         : "0.00"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    </div>
+                    <div className="font-medium text-gray-900">Status</div>
+                    <div>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusStyle(
                           order.status
@@ -315,26 +264,113 @@ const Dashboard = () => {
                       >
                         {order.status || "Unknown"}
                       </span>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    </div>
+                    <div className="font-medium text-gray-900">Actions</div>
+                    <div>
                       <Link
                         to={`/account/orders/${order.entity_id || order.id}`}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 hover:text-indigo-900 text-sm"
                       >
                         View Order
                       </Link>
-                    </td>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Desktop View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Order #
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Date
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Ship To
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Total
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Status
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {recentOrders.map((order) => (
+                    <tr
+                      key={order.entity_id || order.id || Math.random().toString()}
+                    >
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        #{order.order_number || "N/A"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.created_at ? formatDate(order.created_at) : "N/A"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {order.shipping_address
+                          ? `${order.shipping_address.firstname || ""} ${order.shipping_address.lastname || ""}`.trim()
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${typeof order.grand_total === "number"
+                          ? order.grand_total.toFixed(2)
+                          : "0.00"}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusStyle(
+                            order.status
+                          )}`}
+                        >
+                          {order.status || "Unknown"}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <Link
+                          to={`/account/orders/${order.entity_id || order.id}`}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          View Order
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
-          <div className="bg-gray-50 p-6 text-center rounded-md">
-            <p className="text-gray-500">You have not placed any orders yet.</p>
+          <div className="bg-gray-50 p-4 sm:p-6 text-center rounded-lg">
+            <p className="text-gray-500 text-sm sm:text-base">You have not placed any orders yet.</p>
             <Link
               to="/products"
-              className="mt-3 inline-block text-indigo-600 hover:text-indigo-800"
+              className="mt-2 sm:mt-3 inline-block text-indigo-600 hover:text-indigo-800 text-sm sm:text-base"
             >
               Browse Products
             </Link>

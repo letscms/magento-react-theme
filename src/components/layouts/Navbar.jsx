@@ -304,7 +304,7 @@ const Navbar = () => {
           >
             {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
           </button>
-          <span className="font-semibold text-lg text-gray-800">Categories</span>
+          
           <div className="w-6"></div>
         </div>
 

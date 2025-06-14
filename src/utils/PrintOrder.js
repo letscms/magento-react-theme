@@ -66,6 +66,17 @@ export const printOrder = (order) => {
         .order-info div {
           flex: 1;
         }
+        .order-label {
+          color: #666;
+          margin-bottom: 5px;
+        }
+        .order-value {
+          font-weight: 500;
+          margin-top: 0;
+        }
+        .order-total {
+          font-weight: 700;
+        }
         .address-container {
           display: flex;
           flex-wrap: wrap;
@@ -91,6 +102,17 @@ export const printOrder = (order) => {
         }
         th {
           background-color: #f2f2f2;
+        }
+        .product-name {
+          font-weight: 500;
+        }
+        .product-option {
+          font-size: 12px;
+          color: #666;
+          margin-top: 5px;
+        }
+        .product-option-label {
+          font-weight: 500;
         }
         .summary {
           background-color: #f9f9f9;
@@ -119,6 +141,9 @@ export const printOrder = (order) => {
         .status-processing { background-color: #dbeafe; color: #1e40af; }
         .status-pending { background-color: #fef3c7; color: #92400e; }
         .status-canceled { background-color: #fee2e2; color: #b91c1c; }
+        .discount {
+          color: #059669;
+        }
         @media print {
           body { 
             print-color-adjust: exact;
@@ -132,16 +157,16 @@ export const printOrder = (order) => {
       
       <div class="order-info">
         <div>
-          <p style="color: #666; margin-bottom: 5px;">Order Date:</p>
-          <p style="font-weight: 500; margin-top: 0;">${formatDate(order.created_at)}</p>
+          <p class="order-label">Order Date:</p>
+          <p class="order-value">${formatDate(order.created_at)}</p>
         </div>
         <div>
-          <p style="color: #666; margin-bottom: 5px;">Status:</p>
+          <p class="order-label">Status:</p>
           <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span>
         </div>
         <div>
-          <p style="color: #666; margin-bottom: 5px;">Total:</p>
-          <p style="font-weight: 700; margin-top: 0;">${formatPrice(order.grand_total)}</p>
+          <p class="order-label">Total:</p>
+          <p class="order-value order-total">${formatPrice(order.grand_total)}</p>
         </div>
       </div>
       
@@ -198,17 +223,17 @@ export const printOrder = (order) => {
           ${order.items.map(item => `
             <tr>
               <td>
-                <div style="font-weight: 500;">${item.name}</div>
+                <div class="product-name">${item.name}</div>
                 ${item.options ? item.options.map(option => `
-                  <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                    <span style="font-weight: 500;">${option.label}:</span> ${option.value}
+                  <div class="product-option">
+                    <span class="product-option-label">${option.label}:</span> ${option.value}
                   </div>
                 `).join('') : ''}
               </td>
               <td>${item.sku}</td>
               <td>${formatPrice(item.price)}</td>
               <td>${item.qty_ordered}</td>
-              <td style="font-weight: 500;">${formatPrice(item.row_total)}</td>
+              <td class="order-value">${formatPrice(item.row_total)}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -224,7 +249,7 @@ export const printOrder = (order) => {
         ${order.discount_amount > 0 ? `
         <div class="summary-row">
           <span>Discount</span>
-          <span style="color: #059669;">-${formatPrice(Math.abs(order.discount_amount))}</span>
+          <span class="discount">-${formatPrice(Math.abs(order.discount_amount))}</span>
         </div>
         ` : ''}
         
@@ -264,7 +289,6 @@ export const printOrder = (order) => {
 // Export other print-related functions if needed
 export const printInvoice = (invoice) => {
   // Similar implementation for invoices
-
 };
 
 export const printShipment = (shipment) => { 

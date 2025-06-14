@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, use } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCategory } from "../context/CategoryContext";
 import useProduct from "../hooks/useProduct";
@@ -74,6 +74,15 @@ const ProductDetailPage = () => {
     [discount]
   );
 
+  useEffect(() => {
+    if (displayProduct && displayProduct.media_gallery && displayProduct.media_gallery.length > 0) {
+      setSelectedImage(displayProduct.media_gallery[0].url || displayProduct.small_image?.url);
+    } else if (displayProduct && displayProduct.small_image?.url) {
+      setSelectedImage(displayProduct.small_image.url);
+    } else {
+      setSelectedImage(null);
+    }
+  }, [displayProduct]);
   // Handlers
   const handleWishlistClick = useCallback(async () => {
     if (!user) {
@@ -188,6 +197,8 @@ const ProductDetailPage = () => {
       </div>
     );
   }
+  console.log("Product data:", product);
+  console.log("Display product:", displayProduct);
 
   // Main render
   return (
@@ -208,7 +219,7 @@ const ProductDetailPage = () => {
                 <a href="/" className="text-gray-500 hover:text-indigo-600">Home</a>              
               <span className="mx-2 text-gray-400">/</span>
               </li> 
-              <li className="text-indigo-600 font-medium">{product.name}</li>
+              <li className="text-indigo-600 font-medium">{displayProduct.name}</li>
             </ol>
           </nav>
         </div>
@@ -230,9 +241,9 @@ const ProductDetailPage = () => {
               </div>
 
               {/* Image Thumbnails */}
-              {product.media_gallery?.length > 0 && (
+              {displayProduct.media_gallery?.length > 0 && (
                 <div className="flex flex-wrap -mx-2 mb-4">
-                  {product.media_gallery.map((image, index) => (
+                  {displayProduct.media_gallery.map((image, index) => (
                     <div
                       key={image.url || index}
                       className="w-1/4 px-2 mb-4"
@@ -245,7 +256,7 @@ const ProductDetailPage = () => {
                           src={image.url}
                           alt={image.label || `${product.name} thumbnail ${index + 1}`}
                           loading="lazy"
-                          className="max-h-full max-w-full object-contain w-[100px] h-[00px] "
+                          className="max-h-full max-w-full object-contain w-[100px] h-[100px] "
                           width="100px"
                           height="100px"
                         />

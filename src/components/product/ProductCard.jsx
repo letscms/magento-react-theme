@@ -20,7 +20,8 @@ const PRODUCT_TYPES = {
   ConfigurableProduct: "Configurable", // Handle GraphQL typename
 };
 
-const ProductCard = ({ product, isLCPCandidate }) => {
+const ProductCard = ({ product, isLCPCandidate }) => {   
+  // console.log("ProductCard rendered with product:", product);
   const { baseMediaUrl } = useConfig();
   const { addItemToCart, loading: cartLoading } = useCart();
   const { isAuthenticated } = useAuth();
@@ -168,6 +169,7 @@ const ProductCard = ({ product, isLCPCandidate }) => {
   const isOnSale = discount?.amount_off > 0 || discount?.percent_off > 0;
   const isOutOfStock = product.stock_status !== "IN_STOCK";
 
+
   return (
     <div
       className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition"
@@ -179,15 +181,15 @@ const ProductCard = ({ product, isLCPCandidate }) => {
           <img
             src={imageUrl}
             alt={product.small_image?.label || product.name || "Product"}
-            className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
+            className={`w-full h-full object-contain transition-transform duration-300 ease-in-out ${
+              hovered ? "scale-105" : "scale-100"
+            }`}
             width="192"
             height="192"
             loading={isLCPCandidate ? "eager" : "lazy"}
             decoding="async"
-            style={{
-              transform: hovered ? "scale(1.05)" : "scale(1)",
-            }}
           />
+
           {isOutOfStock && (
             <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
               Out of Stock

@@ -107,6 +107,11 @@ const PRODUCT_DETAIL_FRAGMENT = gql`
             url
             label
           }
+          media_gallery {
+            url
+            label
+            position
+          }
           # Potentially more fields if needed for variant selection logic
         }
         attributes {
@@ -221,7 +226,6 @@ const PRODUCT_DETAIL_FRAGMENT = gql`
  * @returns {Promise} - Promise resolving to products data
  */
 export const getProducts = async (searchCriteria = {}) => {
- 
   return getCachedProductData(
     PRODUCT_CACHE_KEYS.ALL_PRODUCTS(searchCriteria),
     async () => {
@@ -238,8 +242,10 @@ export const getProducts = async (searchCriteria = {}) => {
         // Determine sort order
         // If a searchTerm is present and no specific sort is provided in searchCriteria, sort by relevance.
         // Otherwise, if no specific sort is provided, sort by position.
-        const resolvedSortField = searchCriteria.sortField || (searchTerm ? "relevance" : "position");
-        const resolvedSortDirection = searchCriteria.sortDirection || (searchTerm ? "DESC" : "ASC");
+        const resolvedSortField =
+          searchCriteria.sortField || (searchTerm ? "relevance" : "position");
+        const resolvedSortDirection =
+          searchCriteria.sortDirection || (searchTerm ? "DESC" : "ASC");
 
         // Build GraphQL filter from filterGroups
         const filter = {};
@@ -384,8 +390,10 @@ export const getProducts = async (searchCriteria = {}) => {
           page_info: {
             page_size: searchCriteria.pageSize,
             current_page: searchCriteria.currentPage,
-            total_pages: Math.ceil(data.products.total_count / searchCriteria.pageSize)
-          }
+            total_pages: Math.ceil(
+              data.products.total_count / searchCriteria.pageSize
+            ),
+          },
         };
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -574,6 +582,10 @@ export const getProductByUrlKey = async (urlKey) => {
                             }
                           }
                         }
+                        media_gallery {
+                          url
+                          label
+                        }
                       }
                     }
                   }
@@ -654,7 +666,9 @@ export const searchProducts = async (searchTerm, options = {}) => {
   } = options;
 
   // Construct a comprehensive cache key
-  const cacheKey = `search_products_term-${searchTerm}_page-${currentPage}_size-${pageSize}_sort-${sortField}-${sortDirection.toUpperCase()}_filters-${JSON.stringify(filterGroups)}`;
+  const cacheKey = `search_products_term-${searchTerm}_page-${currentPage}_size-${pageSize}_sort-${sortField}-${sortDirection.toUpperCase()}_filters-${JSON.stringify(
+    filterGroups
+  )}`;
 
   return getCachedProductData(
     cacheKey, // Use the new comprehensive cache key
@@ -680,16 +694,39 @@ export const searchProducts = async (searchTerm, options = {}) => {
                 } else {
                   if (!gqlFilter[field]) gqlFilter[field] = {};
                   switch (condition_type) {
-                    case "eq": gqlFilter[field]["eq"] = value; break;
-                    case "neq": gqlFilter[field]["neq"] = value; break;
-                    case "like": gqlFilter[field]["match"] = value; break;
-                    case "in": gqlFilter[field]["in"] = Array.isArray(value) ? value : [value]; break;
-                    case "nin": gqlFilter[field]["nin"] = Array.isArray(value) ? value : [value]; break;
-                    case "gt": gqlFilter[field]["gt"] = value; break;
-                    case "lt": gqlFilter[field]["lt"] = value; break;
-                    case "gteq": gqlFilter[field]["gteq"] = value; break;
-                    case "lteq": gqlFilter[field]["lteq"] = value; break;
-                    default: gqlFilter[field]["eq"] = value;
+                    case "eq":
+                      gqlFilter[field]["eq"] = value;
+                      break;
+                    case "neq":
+                      gqlFilter[field]["neq"] = value;
+                      break;
+                    case "like":
+                      gqlFilter[field]["match"] = value;
+                      break;
+                    case "in":
+                      gqlFilter[field]["in"] = Array.isArray(value)
+                        ? value
+                        : [value];
+                      break;
+                    case "nin":
+                      gqlFilter[field]["nin"] = Array.isArray(value)
+                        ? value
+                        : [value];
+                      break;
+                    case "gt":
+                      gqlFilter[field]["gt"] = value;
+                      break;
+                    case "lt":
+                      gqlFilter[field]["lt"] = value;
+                      break;
+                    case "gteq":
+                      gqlFilter[field]["gteq"] = value;
+                      break;
+                    case "lteq":
+                      gqlFilter[field]["lteq"] = value;
+                      break;
+                    default:
+                      gqlFilter[field]["eq"] = value;
                   }
                 }
               });
@@ -764,7 +801,8 @@ export const searchProducts = async (searchTerm, options = {}) => {
         return {
           items: data.products.items || [],
           total_count: data.products.total_count || 0,
-          search_criteria: { // Reflect the criteria used
+          search_criteria: {
+            // Reflect the criteria used
             search_term: searchTerm,
             page_size: pageSize,
             current_page: currentPage,
@@ -782,14 +820,17 @@ export const searchProducts = async (searchTerm, options = {}) => {
           `Error searching products for term "${searchTerm}":`,
           error
         );
-        return { // Return a consistent structure on error
+        return {
+          // Return a consistent structure on error
           items: [],
           total_count: 0,
           search_criteria: {
             search_term: searchTerm,
             page_size: pageSize, // Use destructured pageSize
             current_page: currentPage, // Use destructured currentPage
-            sort_orders: [{ field: sortField, direction: sortDirection.toUpperCase() }], // Use destructured sort
+            sort_orders: [
+              { field: sortField, direction: sortDirection.toUpperCase() },
+            ], // Use destructured sort
             filter_groups: filterGroups, // Use destructured filterGroups
           },
           page_info: {
@@ -977,8 +1018,8 @@ export const getProductsByCategory = async (
                         break;
                       default:
                         // Only apply 'eq' if condition_type is truly undefined and not handled by other logic
-                        if (typeof condition_type === 'undefined') {
-                           additionalFilters[field]["eq"] = value;
+                        if (typeof condition_type === "undefined") {
+                          additionalFilters[field]["eq"] = value;
                         }
                     }
                   }

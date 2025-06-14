@@ -10,21 +10,16 @@ import { CartProvider } from "./hooks/useCart";
 import { AddressProvider } from "./context/AddressContext"; // Added import
 import { WishlistProvider } from "./context/WishlistContext";
 import { ToastContainer, toast } from "react-toastify";
-import Header from "./components/layouts/Header";
-import Footer from "./components/layouts/Footer";
-
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <CartProvider>
+        <CartProvider >
           <WishlistProvider>
             <CategoryProvider>
               <AddressProvider>
-                <ProductProvider>
-                  <Header />
-                  <AppRoutes />
-                  <Footer />
+                <ProductProvider>                 
+                  <AppRoutes />                
                 </ProductProvider>
               </AddressProvider>
             </CategoryProvider>

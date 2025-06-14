@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 
 const ProductFilter = ({ filters, appliedFilters, onFilterChange, categories }) => {
   const [expandedSections, setExpandedSections] = useState({});
-  
+
   // Ensure filters is always an array
   const filtersArray = Array.isArray(filters) ? filters : [];
-  
+
   // Create a category filter if categories are provided
   const categoryFilter = categories && categories.length > 0 ? {
     attribute_code: 'category_id',
@@ -37,10 +37,8 @@ const ProductFilter = ({ filters, appliedFilters, onFilterChange, categories }) 
     
     let newValues;
     if (checked) {
-      // Add value if checked
       newValues = [...currentValues, value];
     } else {
-      // Remove value if unchecked
       newValues = currentValues.filter(v => v !== value);
     }
     
@@ -73,14 +71,15 @@ const ProductFilter = ({ filters, appliedFilters, onFilterChange, categories }) 
   };
 
   const totalAppliedFilters = countAppliedFilters();
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Filters</h2>
+        <h2 className="text-base sm:text-lg font-semibold">Filters</h2>
         {totalAppliedFilters > 0 && (
           <button 
             onClick={clearAllFilters}
-            className="text-sm text-indigo-600 hover:text-indigo-800"
+            className="text-sm sm:text-base text-indigo-600 hover:text-indigo-800"
           >
             Clear All
           </button>
@@ -88,43 +87,43 @@ const ProductFilter = ({ filters, appliedFilters, onFilterChange, categories }) 
       </div>
 
       {allFilters.length === 0 ? (
-        <p className="text-gray-500 text-sm">No filters available</p>
+        <p className="text-gray-500 text-sm sm:text-base">No filters available</p>
       ) : (
         <div className="space-y-4">
           {allFilters.map(filter => {
             if (!filter || !filter.attribute_code) {
-              return null; // Skip invalid filters
+              return null;
             }
-            if(filter.attribute_code === 'category_uid') {
-              return null; // Skip category filter if options are not an array
+            if (filter.attribute_code === 'category_uid') {
+              return null;
             }
             
-            const isExpanded = expandedSections[filter.attribute_code] !== false; // Default to expanded
+            const isExpanded = expandedSections[filter.attribute_code] !== false;
             const hasAppliedValues = appliedFilters && 
-                                    Array.isArray(appliedFilters[filter.attribute_code]) && 
-                                    appliedFilters[filter.attribute_code].length > 0;
+                                   Array.isArray(appliedFilters[filter.attribute_code]) && 
+                                   appliedFilters[filter.attribute_code].length > 0;
             
             return (
               <div key={filter.attribute_code} className="border-b pb-3">
                 <div 
-                  className="flex justify-between items-center cursor-pointer py-2"
+                  className="flex justify-between items-center cursor-pointer py-2 touch-manipulation"
                   onClick={() => toggleSection(filter.attribute_code)}
                 >
                   <div className="flex items-center">
-                    <h3 className="font-medium text-gray-800">{filter.label || filter.attribute_code}</h3>
+                    <h3 className="font-medium text-gray-800 text-sm sm:text-base">{filter.label || filter.attribute_code}</h3>
                     {hasAppliedValues && (
                       <span className="ml-2 bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
                         {appliedFilters[filter.attribute_code].length}
                       </span>
                     )}
                   </div>
-                  <span className="text-gray-500">
+                  <span className="text-gray-500 text-lg sm:text-xl">
                     {isExpanded ? '−' : '+'}
                   </span>
                 </div>
                 
                 {isExpanded && (
-                  <div className="mt-2 pl-2">
+                  <div className="mt-2 pl-2 sm:pl-4">
                     {hasAppliedValues && (
                       <div className="flex justify-end mb-2">
                         <button 
@@ -132,44 +131,44 @@ const ProductFilter = ({ filters, appliedFilters, onFilterChange, categories }) 
                             e.stopPropagation();
                             clearFilter(filter.attribute_code);
                           }}
-                          className="text-xs text-gray-500 hover:text-indigo-600"
+                          className="text-xs sm:text-sm text-gray-500 hover:text-indigo-600"
                         >
                           Clear
                         </button>
                       </div>
                     )}
                     
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                    <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
                       {Array.isArray(filter.options) ? (
                         filter.options.map(option => {
                           if (!option || !option.value) {
-                            return null; // Skip invalid options
+                            return null;
                           }
                           
                           return (
-                            <div key={option.value} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id={`${filter.attribute_code}-${option.value}`}
-                            checked={isFilterApplied(filter.attribute_code, option.value)}
-                            onChange={(e) => handleFilterChange(
-                              filter.attribute_code, 
-                              option.value, 
-                              e.target.checked
-                            )}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                          />
-                          <label 
-                            htmlFor={`${filter.attribute_code}-${option.value}`}
-                            className="ml-2 text-sm text-gray-700"
-                          >
-                            {option.label || option.value} 
-                          </label>
+                            <div key={option.value} className="flex items-center py-1">
+                              <input
+                                type="checkbox"
+                                id={`${filter.attribute_code}-${option.value}`}
+                                checked={isFilterApplied(filter.attribute_code, option.value)}
+                                onChange={(e) => handleFilterChange(
+                                  filter.attribute_code, 
+                                  option.value, 
+                                  e.target.checked
+                                )}
+                                className="h-5 w-5 sm:h-4 sm:w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                              />
+                              <label 
+                                htmlFor={`${filter.attribute_code}-${option.value}`}
+                                className="ml-3 text-sm sm:text-base text-gray-700"
+                              >
+                                {option.label || option.value} 
+                              </label>
                             </div>
                           );
                         })
                       ) : (
-                        <p className="text-sm text-gray-500">No options available</p>
+                        <p className="text-sm sm:text-base text-gray-500">No options available</p>
                       )}
                     </div>
                   </div>

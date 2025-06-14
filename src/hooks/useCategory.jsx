@@ -6,8 +6,7 @@ import * as categoryApi from "../api/category";
  */
 export const useCategory = () => {
   const [categories, setCategories] = useState([]);
-  const [categoryTree, setCategoryTree] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [categoryTree, setCategoryTree] = useState(null); 
   const [error, setError] = useState(null);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [categoryProducts, setCategoryProducts] = useState({
@@ -23,7 +22,7 @@ export const useCategory = () => {
   const stateRef = useRef({
     categories,
     categoryTree,
-    loading,
+   
     error,
     currentCategory,
     categoryProducts,
@@ -35,8 +34,7 @@ export const useCategory = () => {
   // Update refs when state changes
   stateRef.current = {
     categories,
-    categoryTree,
-    loading,
+    categoryTree, 
     error,
     currentCategory,
     categoryProducts,
@@ -49,7 +47,7 @@ export const useCategory = () => {
    * Load all categories
    */
   const loadCategories = useCallback(async () => {
-    setLoading(true);
+   
     setError(null);
 
     try {
@@ -61,7 +59,7 @@ export const useCategory = () => {
       setError(err.message || "Failed to load categories");
       return [];
     } finally {
-      setLoading(false);
+     
     }
   }, []); // Empty dependency array to ensure stable reference
 
@@ -70,7 +68,7 @@ export const useCategory = () => {
    * @param {number} rootCategoryId - Root category ID
    */
   const loadCategoryTree = useCallback(async (rootCategoryId = 2) => {
-    setLoading(true);
+    
     setError(null);
 
     try {
@@ -81,7 +79,7 @@ export const useCategory = () => {
       setError(err.message || "Failed to load category tree");
       return null;
     } finally {
-      setLoading(false);
+     
     }
   }, []);
 
@@ -90,7 +88,7 @@ export const useCategory = () => {
    * @param {number} categoryId - Category ID
    */
   const loadCategoryById = useCallback(async (categoryId) => {
-    setLoading(true);
+  
     setError(null);
 
     try {
@@ -101,7 +99,7 @@ export const useCategory = () => {
       setError(err.message || `Failed to load category ${categoryId}`);
       return null;
     } finally {
-      setLoading(false);
+     
     }
   }, []);
 
@@ -110,13 +108,13 @@ export const useCategory = () => {
    * @param {string} urlKey - Category URL key or slug
    */
   const loadCategoryByUrlKey = useCallback(async (urlKey) => {
-    setLoading(true);
+  
     setError(null);
 
     if (stateRef.current.cachedCategoryDetails[urlKey]) {
       const cachedData = stateRef.current.cachedCategoryDetails[urlKey];
       setCurrentCategory(cachedData);
-      setLoading(false);
+    
       return cachedData;
     }
 
@@ -136,9 +134,9 @@ export const useCategory = () => {
       setCurrentCategory(null); // Ensure currentCategory is reset on error
       return null;
     } finally {
-      setLoading(false);
+    
     }
-  }, [setCachedCategoryDetails, setCurrentCategory, setLoading, setError]); // Dependencies updated
+  }, [setCachedCategoryDetails, setCurrentCategory,, setError]); // Dependencies updated
 
   /**
    * Load products for a category
@@ -147,7 +145,7 @@ export const useCategory = () => {
    */
   const loadCategoryProducts = useCallback(
     async (categoryIdentifier, options = {}) => {
-      setLoading(true);
+     
       setError(null);
 
       try {
@@ -174,7 +172,7 @@ export const useCategory = () => {
         );
         return { items: [], total_count: 0 };
       } finally {
-        setLoading(false);
+        
       }
     },
     []
@@ -185,7 +183,7 @@ export const useCategory = () => {
    * @param {number} parentId - Parent category ID
    */
   const loadChildCategories = useCallback(async (parentId) => {
-    setLoading(true);
+    
     setError(null);
 
     try {
@@ -197,7 +195,7 @@ export const useCategory = () => {
       );
       return [];
     } finally {
-      setLoading(false);
+      
     }
   }, []);
 
@@ -206,7 +204,7 @@ export const useCategory = () => {
    * @param {number} categoryId - Category ID
    */
   const loadCategoryFilters = useCallback(async (categoryId) => {
-    setLoading(true);
+   
     setError(null);
 
     try {
@@ -219,7 +217,7 @@ export const useCategory = () => {
       );
       return [];
     } finally {
-      setLoading(false);
+   
     }
   }, []);
 
@@ -228,7 +226,7 @@ export const useCategory = () => {
    * @param {number} limit - Maximum number of categories
    */
   const loadFeaturedCategories = useCallback(async (limit = 10) => {
-    setLoading(true);
+    
     setError(null);
 
     try {
@@ -238,7 +236,7 @@ export const useCategory = () => {
       setError(err.message || "Failed to load featured categories");
       return [];
     } finally {
-      setLoading(false);
+     
     }
   }, []);
 
@@ -248,7 +246,7 @@ export const useCategory = () => {
    * @param {number} limit - Maximum number of results
    */
   const searchCategoriesByName = useCallback(async (searchTerm, limit = 20) => {
-    setLoading(true);
+  
     setError(null);
 
     try {
@@ -260,7 +258,7 @@ export const useCategory = () => {
       );
       return [];
     } finally {
-      setLoading(false);
+      
     }
   }, []);
 
@@ -269,34 +267,32 @@ export const useCategory = () => {
    * @param {number} categoryId - Category ID
    */
   const getCategoryBreadcrumbs = useCallback(async (categoryId) => {
-    setLoading(true);
-    setError(null);
+  setError(null);
 
-    if (stateRef.current.cachedBreadcrumbs[categoryId]) {
-      setLoading(false);
-      return stateRef.current.cachedBreadcrumbs[categoryId];
-    }
+  // Fix: Remove the incorrect curteRef reference
+  if (stateRef.current.cachedBreadcrumbs[categoryId]) {     
+    return stateRef.current.cachedBreadcrumbs[categoryId];
+  }
 
-    try {
-      const pathCategories = await categoryApi.getCategoryPath(categoryId);
-      const breadcrumbsData = pathCategories.map((cat) => ({
-        id: cat.id,
-        name: cat.name,
-        url: `/category/${cat.url_key || cat.id}`,
-      }));
-      if (breadcrumbsData.length > 0) { // Only cache if we got valid breadcrumbs
-        setCachedBreadcrumbs(prev => ({ ...prev, [categoryId]: breadcrumbsData }));
-      }
-      return breadcrumbsData;
-    } catch (err) {
-      setError(
-        err.message || `Failed to get breadcrumbs for category ${categoryId}`
-      );
-      return [];
-    } finally {
-      setLoading(false);
+  try {
+    const pathCategories = await categoryApi.getCategoryPath(categoryId);
+    const breadcrumbsData = pathCategories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      url: `/category/${cat.url_key || cat.id}`,
+    }));
+    if (breadcrumbsData.length > 0) { // Only cache if we got valid breadcrumbs
+      setCachedBreadcrumbs(prev => ({ ...prev, [categoryId]: breadcrumbsData }));
     }
-  }, [setCachedBreadcrumbs, setLoading, setError]); // Dependencies updated
+    return breadcrumbsData;
+  } catch (err) {
+    setError(
+      err.message || `Failed to get breadcrumbs for category ${categoryId}`
+    );
+    return [];
+  } finally {
+        }
+  }, [setCachedBreadcrumbs, setError]); // Dependencies updated
 
   // Clear error utility function
   const clearError = useCallback(() => setError(null), []);
@@ -304,8 +300,7 @@ export const useCategory = () => {
   return {
     // State
     categories,
-    categoryTree,
-    loading,
+    categoryTree,   
     error,
     currentCategory,
     categoryProducts,

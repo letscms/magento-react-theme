@@ -1,0 +1,2 @@
+import{j as s}from"./vendor-frSDhvcu.js";import{D as e,E as r,W as o,b as n}from"./index-CvpdAI6N.js";import{M as i}from"./vendor-router-CdLpK7Hz.js";const t=()=>s.jsx(i,{children:s.jsx(e,{children:s.jsx(r,{children:s.jsx(o,{children:s.jsxs("div",{className:"p-6",children:[s.jsx("h2",{className:"text-2xl font-semibold text-center mb-6",children:"Login to Continue Shopping"}),s.jsx(n,{})]})})})})});export{t as L};
+//# sourceMappingURL=LoginWrapper-BvE8Zoxs.js.map

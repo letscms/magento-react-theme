@@ -13,7 +13,6 @@ const ConfigurableProductOptions = ({
   const isInitializedRef = useRef(false);
   const prevVariantRef = useRef(null);
 
-  // Init only once unless product changes
   useEffect(() => {
     if (!configurable_options || isInitializedRef.current) return;
 
@@ -41,7 +40,6 @@ const ConfigurableProductOptions = ({
     isInitializedRef.current = true;
   }, [product]);
 
-  // Handle option change
   const handleOptionChange = (attrCode, valueIndex) => {
     setSelectedOptions((prev) => ({
       ...prev,
@@ -49,7 +47,6 @@ const ConfigurableProductOptions = ({
     }));
   };
 
-  // Update variant based on selected options
   useEffect(() => {
     if (!variants || Object.keys(selectedOptions).length === 0) {
       if (prevVariantRef.current !== null) {
@@ -86,7 +83,6 @@ const ConfigurableProductOptions = ({
     }
   }, [selectedOptions, variants, configurable_options]);
 
-  // No options? Return null early
   if (!configurable_options?.length) return null;
 
   return (
@@ -109,7 +105,7 @@ const ConfigurableProductOptions = ({
                 return variants?.some((variant) => {
                   const hasThisValue = variant.attributes?.some(
                     (attr) =>
-                      attr.code === option.attribute_code &&  
+                      attr.code === option.attribute_code &&
                       attr.value_index === value.value_index
                   );
                   if (!hasThisValue) return false;
@@ -131,41 +127,33 @@ const ConfigurableProductOptions = ({
                   handleOptionChange(option.attribute_code, value.value_index),
                 disabled: !isOptionAvailable,
                 title: value.label,
+                "aria-label": value.label,
               };
+
+              const disabledClasses = !isOptionAvailable
+                ? "opacity-50 cursor-not-allowed"
+                : "";
 
               return isColorSwatch ? (
                 <button
                   key={value.value_index}
                   {...commonProps}
-                  className={`w-8 h-8 rounded-full border-2
-        ${
-          isSelected
-            ? "ring-2 ring-offset-1 ring-indigo-500 border-indigo-500"
-            : "border-gray-300"
-        }
-        ${
-          !isOptionAvailable
-            ? "opacity-50 cursor-not-allowed"
-            : "hover:border-gray-400"
-        }`}
-                  style={{ backgroundColor: swatchValue }}
-                  aria-label={value.label}
+                  className={`w-8 h-8 rounded-full border-2 ${
+                    isSelected
+                      ? "ring-2 ring-offset-1 ring-indigo-500 border-indigo-500"
+                      : "border-gray-300 hover:border-gray-400"
+                  } ${disabledClasses} color-swatch`}
+                  data-color={swatchValue}
                 />
               ) : (
                 <button
                   key={value.value_index}
                   {...commonProps}
-                  className={`px-3 py-1 border rounded text-sm
-        ${
-          isSelected
-            ? "bg-indigo-600 text-white border-indigo-600"
-            : "bg-white text-gray-700 border-gray-300"
-        }
-        ${
-          !isOptionAvailable
-            ? "opacity-50 cursor-not-allowed line-through"
-            : "hover:border-gray-500"
-        }`}
+                  className={`px-3 py-1 border rounded text-sm ${
+                    isSelected
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-gray-500"
+                  } ${disabledClasses}`}
                 >
                   {value.label}
                 </button>

@@ -2,8 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // Layout Components
-import Header from "../components/layouts/Header";
-import Footer from "../components/layouts/Footer";
+import MainLayout from "../components/layouts/MainLayout";
 
 // Utility
 import { isAuthenticated } from "../api/auth";
@@ -27,7 +26,7 @@ const ShippingReturns = lazy(() => import("../pages/ShippingReturns"));
 const PrivacyPolicyPage = lazy(() => import("../pages/PrivacyPolicyPage"));
 const ContactPage = lazy(() => import("../pages/ContactPage"));
 
-// Account Sub-Sections — lazy load too if large in future
+// Account Sub-Sections
 import Dashboard from "../components/account/Dashboard";
 import Orders from "../components/account/Orders";
 import OrderDetail from "../components/account/OrderDetail";
@@ -47,48 +46,42 @@ const ProtectedRoute = ({ children }) => {
 // Main Routing Component
 function AppRoutes() {
   return (
-    <>
-      {/* <Header /> */}
+    <Suspense fallback={<div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>}>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<MainLayout><HomePage /></MainLayout>} />
+        <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+        <Route path="/reset-password" element={<RequestPasswordResetForm />} />
+        <Route path="/categorypage" element={<MainLayout><FeaturedProducts /></MainLayout>} />
+        <Route path="/category/:slug" element={<MainLayout><CategoryProductListing /></MainLayout>} />
+        <Route path="/product/:urlKey" element={<MainLayout><ProductDetailPage /></MainLayout>} />
+        <Route path="/cart" element={<MainLayout><Cart /></MainLayout>} />
+        <Route path="/checkout" element={<MainLayout><Checkout /></MainLayout>} />
+        <Route path="/search" element={<MainLayout><SearchResults /></MainLayout>} />
+        <Route path="/faq" element={<MainLayout><Faqs /></MainLayout>} />
+        <Route path="/shipping-returns" element={<MainLayout><ShippingReturns /></MainLayout>} />
+        <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />
+        <Route path="/privacy-policy" element={<MainLayout><PrivacyPolicyPage /></MainLayout>} />
 
-      <Suspense fallback={<div className="flex justify-center items-center h-screen"><LoadingSpinner /></div>}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="resetpassword" element= {<RequestPasswordResetForm />}  />
-          <Route path="/categorypage" element={<FeaturedProducts />} />
-          <Route path="/category/:slug" element={<CategoryProductListing />} />
-          <Route path="/product/:urlKey" element={<ProductDetailPage />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/faq" element={<Faqs />} />
-          <Route path="/shipping-returns" element={<ShippingReturns />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-
-          {/* Protected Account Routes */}
-          <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>}>
-            <Route index element={<Dashboard />} />
-            <Route path="orders" >
-              <Route index element={<Orders />} />
-              <Route path=":orderId" element={<OrderDetail />} />
-            </Route>
-            <Route path="addresses" element={<AccountAddresses />} />
-            <Route path="edit" element={<Myaccount />} />
-            <Route path="reviews" element={<AccountReviews />} />
+        {/* Protected Account Routes */}
+        <Route path="/account" element={<ProtectedRoute><MainLayout><AccountPage /></MainLayout></ProtectedRoute>}>
+          <Route index element={<Dashboard />} />
+          <Route path="orders">
+            <Route index element={<Orders />} />
+            <Route path=":orderId" element={<OrderDetail />} />
           </Route>
+          <Route path="addresses" element={<AccountAddresses />} />
+          <Route path="edit" element={<Myaccount />} />
+          <Route path="reviews" element={<AccountReviews />} />
+        </Route>
 
-          {/* Protected Wishlist */}
-          <Route path="/wishlist" element={<ProtectedRoute><WishlistPage /></ProtectedRoute>} />
+        {/* Protected Wishlist */}
+        <Route path="/wishlist" element={<ProtectedRoute><MainLayout><WishlistPage /></MainLayout></ProtectedRoute>} />
 
-          {/* 404 */}
-          <Route path="*" element={<Page404 />} />
-        </Routes>
-      </Suspense>
-
-      {/* <Footer /> */}
-    </>
+        {/* 404 */}
+        <Route path="*" element={<MainLayout><Page404 /></MainLayout>} />
+      </Routes>
+    </Suspense>
   );
 }
 
